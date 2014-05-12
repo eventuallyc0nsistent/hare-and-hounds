@@ -47,6 +47,7 @@ def print_game_state(board):
             else:
                 buffer += '-\t'
         print buffer
+    print '-' * 30
 
 
 def get_hare_positions(board):
@@ -227,7 +228,9 @@ def static_evaluation(board, player):
     if player == 'hare':
         score = 0
         """ Check if hare is to the left of the hounds"""
-        if (col_hare <= col_hound_3 and col_hare <= col_hound_2 and col_hare <= col_hound_1):
+        if (col_hare < col_hound_3 and col_hare < col_hound_2 and col_hare < col_hound_1):
+            print col_hare, col_hound_1, col_hound_2, col_hound_3
+            print board
             score = math.pow(10, 5)
         else:
             score = dist_hare_goal - dist_hare_start
@@ -296,7 +299,7 @@ def generate_children(board, moves, player, row_hound=None, col_hound=None):
 
 
 def is_gameover(board, score):
-    if score >= math.pow(10, 5):
+    if score > math.pow(10, 5):
         return True
     else:
         return False
@@ -317,7 +320,9 @@ def alphabeta(board, depth, alpha, beta, player, maximizing_player):
         if player == 'hare':
             next_moves = get_next_moves(board, player)
             if next_moves:
-                children = generate_children(board, next_moves, player)
+                children_hare = generate_children(board, next_moves, player)
+                if children_hare:
+                    children = children_hare
 
         else:
             """Hound"""
@@ -325,11 +330,16 @@ def alphabeta(board, depth, alpha, beta, player, maximizing_player):
             (row_hound_1, col_hound_1), (row_hound_2, col_hound_2), (row_hound_3, col_hound_3) = get_hound_positions(board)
             if next_moves_hound1:
                 children_hound1 = generate_children(board, next_moves_hound1, player, row_hound_1, col_hound_1)
+                if children_hound1:
+                    children += children + children_hound1
             if next_moves_hound2:
                 children_hound2 = generate_children(board, next_moves_hound2, player, row_hound_2, col_hound_2)
+                if children_hound2:
+                    children += children + children_hound2
             if next_moves_hound3:
                 children_hound3 = generate_children(board, next_moves_hound3, player, row_hound_3, col_hound_3)
-            children = children_hound1 + children_hound2 + children_hound3
+                if children_hound3:
+                    children += children + children_hound3
 
         for child in children:
             score = alphabeta(child, depth - 1, alpha, beta, alternate_player(player), False)[1]
@@ -352,7 +362,9 @@ def alphabeta(board, depth, alpha, beta, player, maximizing_player):
         if player == 'hare':
             next_moves = get_next_moves(board, player)
             if next_moves:
-                children = generate_children(board, next_moves, player)
+                children_hare = generate_children(board, next_moves, player)
+                if children_hare:
+                    children = children_hare
 
         else:
             """Hound"""
@@ -360,14 +372,18 @@ def alphabeta(board, depth, alpha, beta, player, maximizing_player):
             (row_hound_1, col_hound_1), (row_hound_2, col_hound_2), (row_hound_3, col_hound_3) = get_hound_positions(board)
             if next_moves_hound1:
                 children_hound1 = generate_children(board, next_moves_hound1, player, row_hound_1, col_hound_1)
+                if children_hound1:
+                    children += children + children_hound1
             if next_moves_hound2:
                 children_hound2 = generate_children(board, next_moves_hound2, player, row_hound_2, col_hound_2)
+                if children_hound2:
+                    children += children + children_hound2
             if next_moves_hound3:
                 children_hound3 = generate_children(board, next_moves_hound3, player, row_hound_3, col_hound_3)
-            children = children_hound1 + children_hound2 + children_hound3
+                if children_hound3:
+                    children += children + children_hound3
 
         for child in children:
-
             score = alphabeta(child, depth - 1, alpha, beta, alternate_player(player), True)[1]
 
             if score < beta:
