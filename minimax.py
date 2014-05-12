@@ -1,3 +1,6 @@
+import sys
+
+
 def mini_max(board, player):
     return max_move(board, player)
 
@@ -8,27 +11,39 @@ def max_move(board, player):
     else:
         best_move = []
         moves = next_moves(board, player)
+        sys.exit(0)
         for move in moves:
-            print move
+            board.setHare(move)
+            min_move(board, player)
+
+
+def eval_game_state(board, player):
+    if player == 'hare':
+        print 'Hare'
 
 
 def game_ended(board, player):
     if player == 'hare':
-        hounds = board.getHounds()
-        hare = board.getHare()
 
-        # Compare the sets for hare and hounds and if next move contains all hounds then return True
-        if len(set(hounds) & set(next_moves(board, player))) == 3:
+        if board.hare[0] == (1, 0):
+            """ Check if the hare is at the goal state tuple (1, 0) """
+            print '-----GAMEOVER-----'
             return True
         else:
-            return False
+            """ Compare the sets for hare and hounds and if next move contains all hounds then return True """
+            hounds = board.hounds
+            nextmoves_hare = next_moves(board, player)
+            if len(set(hounds) & set(nextmoves_hare)) == 3 and len(nextmoves_hare) == 3:
+                print '-----GAMEOVER-----'
+                return True
+            else:
+                return False
 
 
 def next_moves(board, player):
     moves = []
-    # @todo : the diagonal moves need to be restricted to problemset in Question
     if player == 'hare':
-        hare = board.getHare()[0]
+        hare = board.hare[0]
         # ==================
         #  Next hare moves
         # ==================
@@ -40,9 +55,25 @@ def next_moves(board, player):
         bottom = (hare[0] + 1, hare[1])
         left = (hare[0], hare[1] - 1)
         right = (hare[0], hare[1] + 1)
-
-        haremoves = [dtopleft, dtopright, dbotright, dbotleft, top, bottom, left, right]
-        for move in haremoves:
-            if move in board.legalMoves and move not in board.hounds:
+        """
+        From the moves the hare can perform
+        Check if the move is legal for the board
+        And the move is not where the hound is right now
+        Append and return the list of moves
+        """
+        hare_moves = [dtopleft, dtopright, dbotright, dbotleft, top, bottom, left, right]
+        for move in hare_moves:
+            if move in board.legalMoves:
                 moves.append(move)
         return moves
+
+    else:
+        hound_moves = board.hounds
+        print "hound moves"
+
+
+def min_move(board, player):
+    best_move = []
+    moves = next_moves(board, player)
+    for move in moves:
+        max_move(board, player)
