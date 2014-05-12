@@ -227,10 +227,8 @@ def static_evaluation(board, player):
     if player == 'hare':
         score = 0
         """ Check if hare is to the left of the hounds"""
-        if (col_hare <= col_hound_3 and col_hare <= col_hound_2 and col_hare <= col_hound_1) or (col_hare <= col_hound_1 and col_hare <= col_hound_2) or (col_hare <= col_hound_1 and col_hare <= col_hound_3) or (col_hare <= col_hound_2 and col_hare <= col_hound_1) or (col_hare <= col_hound_3 and col_hare <= col_hound_3) or (col_hare <= col_hound_3 and col_hare <= col_hound_1) or (col_hare <= col_hound_3 and col_hare <= col_hound_2):
+        if (col_hare <= col_hound_3 and col_hare <= col_hound_2 and col_hare <= col_hound_1):
             score = math.pow(10, 5)
-            print 'To the left'
-            print 'To the left'
         else:
             score = dist_hare_goal - dist_hare_start
             if col_hare > col_hound_1:
@@ -248,8 +246,8 @@ def static_evaluation(board, player):
         return score
     else:
         score = 0
-        """ Check if hare is to the left of the hounds"""
-        if (col_hare <= col_hound_3 and col_hare <= col_hound_2 and col_hare <= col_hound_1) or (col_hare <= col_hound_1 and col_hare <= col_hound_2) or (col_hare <= col_hound_1 and col_hare <= col_hound_3) or (col_hare <= col_hound_2 and col_hare <= col_hound_1) or (col_hare <= col_hound_3 and col_hare <= col_hound_3) or (col_hare <= col_hound_3 and col_hare <= col_hound_1) or (col_hare <= col_hound_3 and col_hare <= col_hound_2):
+        """ Check if hare is trapped"""
+        if (dist_hare_hound1 == 1 and dist_hare_hound2 == 1 and dist_hare_hound3 == 1):
             score = math.pow(10, 5)
         else:
             score = (dist_hare_hound3 + dist_hare_hound2 + dist_hare_hound1) / 3
@@ -293,69 +291,83 @@ def generate_children(board, moves, player, row_hound=None, col_hound=None):
             if copy_board[move[0]][move[1]] == 0:
                 copy_board[move[0]][move[1]] = 1
                 children.append(copy_board)
+
     return children
+
+
+def is_gameover(board, score):
+    if score >= math.pow(10, 5):
+        return True
+    else:
+        return False
 
 
 def alphabeta(board, depth, alpha, beta, player, maximizing_player):
 
     if depth == 0:
-        return (None, static_evaluation(board, player))
+        return (board, static_evaluation(board, player))
 
     if maximizing_player:
         """ max player
         get next moves
         select the best move from the child"""
         best_move = None
+        children = []
 
         if player == 'hare':
             next_moves = get_next_moves(board, player)
-            children = generate_children(board, next_moves, player)
+            if next_moves:
+                children = generate_children(board, next_moves, player)
 
         else:
             """Hound"""
-            children = []
             next_moves_hound1, next_moves_hound2, next_moves_hound3 = get_next_moves(board, player)
             (row_hound_1, col_hound_1), (row_hound_2, col_hound_2), (row_hound_3, col_hound_3) = get_hound_positions(board)
-            children_hound1 = generate_children(board, next_moves_hound1, player, row_hound_1, col_hound_1)
-            children_hound2 = generate_children(board, next_moves_hound2, player, row_hound_2, col_hound_2)
-            children_hound3 = generate_children(board, next_moves_hound3, player, row_hound_3, col_hound_3)
+            if next_moves_hound1:
+                children_hound1 = generate_children(board, next_moves_hound1, player, row_hound_1, col_hound_1)
+            if next_moves_hound2:
+                children_hound2 = generate_children(board, next_moves_hound2, player, row_hound_2, col_hound_2)
+            if next_moves_hound3:
+                children_hound3 = generate_children(board, next_moves_hound3, player, row_hound_3, col_hound_3)
             children = children_hound1 + children_hound2 + children_hound3
 
         for child in children:
             score = alphabeta(child, depth - 1, alpha, beta, alternate_player(player), False)[1]
-
             if score > alpha:
                 best_move = child
                 alpha = score
-                print best_move
 
             if beta <= alpha:
                 break  # beta pruning
 
-        return (best_move, beta)
+        return (best_move, alpha)
 
     else:
         """ min player
         get next moves
         select the best move from the child"""
         best_move = None
+        children = []
 
         if player == 'hare':
             next_moves = get_next_moves(board, player)
-            children = generate_children(board, next_moves, player)
+            if next_moves:
+                children = generate_children(board, next_moves, player)
 
         else:
             """Hound"""
-            children = []
             next_moves_hound1, next_moves_hound2, next_moves_hound3 = get_next_moves(board, player)
             (row_hound_1, col_hound_1), (row_hound_2, col_hound_2), (row_hound_3, col_hound_3) = get_hound_positions(board)
-            children_hound1 = generate_children(board, next_moves_hound1, player, row_hound_1, col_hound_1)
-            children_hound2 = generate_children(board, next_moves_hound2, player, row_hound_2, col_hound_2)
-            children_hound3 = generate_children(board, next_moves_hound3, player, row_hound_3, col_hound_3)
+            if next_moves_hound1:
+                children_hound1 = generate_children(board, next_moves_hound1, player, row_hound_1, col_hound_1)
+            if next_moves_hound2:
+                children_hound2 = generate_children(board, next_moves_hound2, player, row_hound_2, col_hound_2)
+            if next_moves_hound3:
+                children_hound3 = generate_children(board, next_moves_hound3, player, row_hound_3, col_hound_3)
             children = children_hound1 + children_hound2 + children_hound3
 
         for child in children:
-            print child
+
             score = alphabeta(child, depth - 1, alpha, beta, alternate_player(player), True)[1]
 
             if score < beta:
@@ -365,7 +377,7 @@ def alphabeta(board, depth, alpha, beta, player, maximizing_player):
             if beta <= alpha:
                 break  # alpha pruning
 
-        return (best_move, alpha)
+        return (best_move, beta)
 
 gameover = False
 human = True
@@ -418,7 +430,10 @@ while not gameover:
         alpha = -100000
         beta = 100000
         maximizing_player = True
-        best_move, scr = alphabeta(board, depth, alpha, beta, computer_player, maximizing_player)
-        if (best_move) != None:
-            board = best_move
+        best_move, score = alphabeta(board, depth, alpha, beta, computer_player, maximizing_player)
+        board = best_move
+        print_game_state(board)
+        gameover = is_gameover(board, score)
         human = True
+
+print player + ' WINS!'
